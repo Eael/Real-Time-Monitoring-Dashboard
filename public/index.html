@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+<body>
+  <h2>Real-Time Events</h2>
+  <div id="token-section">
+    <input id="tokenInput" placeholder="Paste JWT token here" style="width:400px"/>
+    <button onclick="connect()">Connect</button>
+  </div>
+  <ul id="feed"></ul>
+
+  <script>
+    function connect() {
+      const token = document.getElementById('tokenInput').value;
+      const socket = io('http://localhost:4000', { auth: { token } });
+
+      socket.on('history', (events) => {
+        events.forEach(addEvent);
+      });
+
+      socket.on('event', addEvent);
+
+      socket.on('connect_error', (err) => alert('Auth error: ' + err.message));
+    }
+
+    function addEvent(e) {
+      const li = document.createElement('li');
+      li.textContent = `[${e.type}] ${JSON.stringify(e.payload)} @ ${new Date(e.timestamp).toLocaleTimeString()}`;
+      document.getElementById('feed').prepend(li);
+    }
+  </script>
+</body>
+</html>
